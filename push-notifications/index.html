@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Push notifications example</title>
+    <link rel="manifest" href="manifest.json">
+</head>
+<body>
+
+<header class="header">
+    <h1>Push notifications example</h1>
+</header>
+
+<div class="content">
+    <button id="send">Send notification</button><br />
+</div>
+
+<script>
+var subscription;
+var sendButton = document.getElementById('send');
+
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js').then(function() {
+        return navigator.serviceWorker.ready;
+    }).then(function(reg) {
+        reg.pushManager.subscribe({userVisibleOnly: true}).then(function(pushSubscription) {
+            subscription = pushSubscription;
+        });
+        console.log('Service Worker is ready', reg);
+    }).catch(function(error) {
+        console.log('Service Worker error', error);
+    });
+}
+
+sendButton.addEventListener('click', function() {
+    var endpointParts = subscription.endpoint.split('/');
+    var registrationId = endpointParts[endpointParts.length - 1];
+
+    var request = new Request('https://android.googleapis.com/gcm/send', {
+        method: 'POST',
+        headers: new Headers({
+            'Authorization': 'key=AIzaSyAMzp4LO9CiODdPEpfe7eQtdKHlB3foxcs',
+            'Content-Type': 'application/json'
+        }),
+        body: JSON.stringify({
+            registration_ids: [registrationId]
+        })
+    });
+
+    fetch(request).then(function(response) {
+        console.log(response);
+    }).catch(function(err) {
+        console.log(errror);
+    });
+});
+</script>
+
+</body>
+</html>
